@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:#070d14;
+  font-family:'Share Tech Mono',monospace;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    linear-gradient(rgba(0,210,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,210,255,.04) 1px,transparent 1px);
+  background-size:32px 32px;pointer-events:none;
+}
+.card{
+  position:relative;z-index:1;
+  background:rgba(10,20,34,.92);
+  border:1px solid #1a3048;
+  border-radius:16px;
+  padding:36px 32px 28px;
+  width:380px;
+  box-shadow:0 0 60px rgba(0,180,255,.08),0 24px 48px rgba(0,0,0,.6);
+  animation:rise .5s ease both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+
+.top{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.icon{
+  width:40px;height:40px;border-radius:10px;
+  border:1.5px solid #00d2ff;
+  display:grid;place-items:center;
+  box-shadow:0 0 14px rgba(0,210,255,.35);
+  flex-shrink:0;
+}
+.icon svg{width:20px;height:20px}
+h1{font-family:'Orbitron',sans-serif;font-size:1.15rem;color:#fff;letter-spacing:.06em}
+h1 span{color:#00d2ff}
+.sub{font-size:.6rem;color:#2e5070;letter-spacing:.18em;text-transform:uppercase;margin-top:3px}
+
+label{font-size:.6rem;letter-spacing:.18em;color:#2e5070;text-transform:uppercase;display:block;margin-bottom:6px}
+
+.input-wrap{position:relative;margin-bottom:14px}
+input[type=text]{
+  width:100%;background:#04090f;border:1px solid #1a3048;border-radius:8px;
+  color:#00d2ff;font-family:'Share Tech Mono',monospace;font-size:.9rem;
+  padding:11px 14px;outline:none;transition:.2s;
+}
+input[type=text]:focus{border-color:#00d2ff;box-shadow:0 0 0 3px rgba(0,210,255,.1)}
+input[type=text]::placeholder{color:#1e3a54}
+
+.row{display:flex;gap:10px;margin-bottom:20px}
+.row .field{flex:1}
+input[type=number]{
+  width:100%;background:#04090f;border:1px solid #1a3048;border-radius:8px;
+  color:#00d2ff;font-family:'Share Tech Mono',monospace;font-size:.85rem;
+  padding:9px 12px;outline:none;transition:.2s;
+}
+input[type=number]:focus{border-color:#00d2ff;box-shadow:0 0 0 3px rgba(0,210,255,.1)}
+
+.btn{
+  width:100%;font-family:'Orbitron',sans-serif;font-size:.8rem;letter-spacing:.12em;
+  padding:13px;border-radius:8px;border:none;cursor:pointer;
+  background:#00d2ff;color:#000;font-weight:600;
+  box-shadow:0 0 24px rgba(0,210,255,.3);
+  transition:.2s;text-transform:uppercase;
+}
+.btn:hover{background:#33deff;box-shadow:0 0 36px rgba(0,210,255,.5);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* Results */
+.results{margin-top:20px;display:none}
+.results.show{display:block}
+
+.res-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.res-label{font-size:.6rem;letter-spacing:.18em;color:#2e5070;text-transform:uppercase}
+.badges{display:flex;gap:8px}
+.badge{font-size:.62rem;padding:2px 9px;border-radius:4px;letter-spacing:.08em}
+.b-open{background:rgba(0,255,130,.1);color:#00ff82;border:1px solid rgba(0,255,130,.25)}
+.b-closed{background:rgba(255,70,90,.1);color:#ff465a;border:1px solid rgba(255,70,90,.25)}
+
+.result-list{max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+.result-list::-webkit-scrollbar{width:4px}
+.result-list::-webkit-scrollbar-thumb{background:#1a3048;border-radius:2px}
+
+.result-row{
+  display:flex;align-items:center;justify-content:space-between;
+  background:#04090f;border:1px solid #111e2c;border-radius:6px;
+  padding:7px 12px;font-size:.78rem;
+  animation:rowIn .2s ease both;
+}
+@keyframes rowIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+.r-port{color:#00d2ff;font-weight:600;min-width:50px}
+.r-svc{color:#3a6080;flex:1;padding:0 8px;font-size:.7rem}
+.r-open{color:#00ff82}
+.r-closed{color:#ff465a}
+
+.progress{height:2px;background:#1a3048;border-radius:1px;margin-top:14px;overflow:hidden;display:none}
+.progress.show{display:block}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00d2ff,#00ff82);border-radius:1px;width:0;transition:width .3s ease;box-shadow:0 0 6px rgba(0,210,255,.5)}
+
+.status-txt{font-size:.65rem;color:#2e5070;text-align:center;margin-top:8px;min-height:14px;display:none}
+.status-txt.show{display:block}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.scanning{animation:blink 1s ease-in-out infinite;color:#00d2ff}
+/* =========================
+   Desktop / PC Screens
+========================= */
+@media (min-width: 768px) {
+  body {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .card {
+    width: 520px;
+    padding: 42px;
+    border-radius: 18px;
+    box-shadow: 0 0 80px rgba(0, 210, 255, 0.12), 0 30px 60px rgba(0,0,0,0.7);
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    letter-spacing: 0.08em;
+  }
+
+  .sub {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+  }
+
+  label {
+    font-size: 0.65rem;
+  }
+
+  input[type=text],
+  input[type=number] {
+    font-size: 1rem;
+    padding: 13px 15px;
+    border-radius: 10px;
+  }
+
+  input[type=text]:hover,
+  input[type=number]:hover {
+    border-color: #00d2ff;
+  }
+
+  .btn {
+    font-size: 0.95rem;
+    padding: 15px;
+    border-radius: 10px;
+    transition: all 0.25s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 0 40px rgba(0,210,255,0.6);
+  }
+
+  .result-list {
+    max-height: 280px;
+    padding-right: 4px;
+  }
+
+  .result-row {
+    font-size: 0.9rem;
+    padding: 9px 14px;
+    border-radius: 8px;
+    transition: 0.2s ease;
+  }
+
+  .result-row:hover {
+    background: #07121c;
+    transform: translateX(4px);
+  }
+
+  .r-port {
+    min-width: 60px;
+  }
+}
+
+/* =========================
+   Large Screens (Full HD)
+========================= */
+@media (min-width: 1200px) {
+  .card {
+    width: 620px;
+    padding: 48px;
+  }
+
+  h1 {
+    font-size: 1.7rem;
+  }
+
+  .sub {
+    font-size: 0.8rem;
+  }
+
+  input[type=text],
+  input[type=number] {
+    font-size: 1.05rem;
+    padding: 14px 16px;
+  }
+
+  .btn {
+    font-size: 1rem;
+    padding: 16px;
+  }
+
+  .result-list {
+    max-height: 340px;
+  }
+
+  .result-row {
+    font-size: 1rem;
+    padding: 10px 16px;
+  }
+}
+
+/* =========================
+   Ultra Wide Screens
+========================= */
+@media (min-width: 1600px) {
+  .card {
+    width: 680px;
+  }
+
+  h1 {
+    font-size: 1.9rem;
+  }
+
+  .result-list {
+    max-height: 400px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#00d2ff" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="12" cy="12" r="9"/>
+        <circle cx="12" cy="12" r="3"/>
+        <line x1="12" y1="3" x2="12" y2="9"/>
+        <line x1="12" y1="15" x2="12" y2="21"/>
+        <line x1="3" y1="12" x2="9" y2="12"/>
+        <line x1="15" y1="12" x2="21" y2="12"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Port<span>Scan</span></h1>
+      <div class="sub">Network Recon Tool</div>
+    </div>
+  </div>
+
+  <label>Target IP / Hostname</label>
+  <div class="input-wrap">
+    <input type="text" id="ip" placeholder="192.168.1.1 or example.com"/>
+  </div>
+
+  <div class="row">
+    <div class="field">
+      <label>Port Start</label>
+      <input type="number" id="pStart" value="1" min="1" max="65535"/>
+    </div>
+    <div class="field">
+      <label>Port End</label>
+      <input type="number" id="pEnd" value="1024" min="1" max="65535"/>
+    </div>
+  </div>
+
+  <button class="btn" id="scanBtn" onclick="startScan()">⬡ Start Scan</button>
+
+  <div class="progress" id="prog"><div class="progress-fill" id="fill"></div></div>
+  <div class="status-txt" id="statusTxt"></div>
+
+  <div class="results" id="results">
+    <div class="res-header">
+      <div class="res-label">// Results</div>
+      <div class="badges">
+        <span class="badge b-open" id="openCount">0 Open</span>
+        <span class="badge b-closed" id="closedCount">0 Closed</span>
+      </div>
+    </div>
+    <div class="result-list" id="resultList"></div>
+  </div>
+</div>
+
+<script>
+const SERVICES={21:'FTP',22:'SSH',23:'Telnet',25:'SMTP',53:'DNS',80:'HTTP',110:'POP3',
+  143:'IMAP',443:'HTTPS',3306:'MySQL',3389:'RDP',5432:'PostgreSQL',6379:'Redis',
+  8080:'HTTP-Alt',8443:'HTTPS-Alt',27017:'MongoDB',5900:'VNC',9200:'Elasticsearch'};
+
+let scanning=false,openN=0,closedN=0;
+
+function show(id,cls='show'){document.getElementById(id).classList.add(cls)}
+function setStatus(msg,scanning=false){
+  const el=document.getElementById('statusTxt');
+  el.className='status-txt show'+(scanning?' scanning':'');
+  el.textContent=msg;
+}
+
+async function startScan(){
+  const ip=document.getElementById('ip').value.trim();
+  const s=parseInt(document.getElementById('pStart').value);
+  const e=parseInt(document.getElementById('pEnd').value);
+  if(!ip){setStatus('⚠ Enter an IP or hostname.');return}
+  if(isNaN(s)||isNaN(e)||s>e){setStatus('⚠ Invalid port range.');return}
+  if(e-s>2000){setStatus('⚠ Max 2000 ports per scan.');return}
+
+  scanning=true;openN=0;closedN=0;
+  document.getElementById('scanBtn').disabled=true;
+  document.getElementById('resultList').innerHTML='';
+  document.getElementById('results').classList.remove('show');
+  show('prog');
+  setStatus('Scanning…',true);
+
+  const total=e-s+1,BATCH=15;
+  let scanned=0;
+
+  for(let p=s;p<=e&&scanning;p+=BATCH){
+    const batch=[];
+    for(let b=p;b<Math.min(p+BATCH,e+1);b++) batch.push(b);
+    const res=await Promise.all(batch.map(port=>fakeCheck(port)));
+
+    for(const r of res){
+      if(r.open){openN++;addRow(r)}
+      else closedN++;
+    }
+    scanned+=batch.length;
+    const pct=Math.round(scanned/total*100);
+    document.getElementById('fill').style.width=pct+'%';
+    document.getElementById('openCount').textContent=openN+' Open';
+    document.getElementById('closedCount').textContent=closedN+' Closed';
+    document.getElementById('results').classList.add('show');
+    await new Promise(r=>setTimeout(r,0));
+  }
+
+  document.getElementById('scanBtn').disabled=false;
+  setStatus(`Done — ${openN} open, ${closedN} closed across ${total} ports.`);
+}
+
+function fakeCheck(port){
+  return new Promise(res=>setTimeout(()=>{
+    const svc=SERVICES[port];
+    const open=svc?(Math.random()<.6):(Math.random()<.05);
+    res({port,open,service:svc||'—'});
+  },Math.random()*30+5));
+}
+
+function addRow(r){
+  const list=document.getElementById('resultList');
+  const row=document.createElement('div');
+  row.className='result-row';
+  row.style.animationDelay=(list.children.length*0.04)+'s';
+  row.innerHTML=`<span class="r-port">${r.port}</span><span class="r-svc">${r.service}</span><span class="r-open">OPEN</span>`;
+  list.appendChild(row);
+  list.scrollTop=list.scrollHeight;
+  
+}
+</script>
+</body>
+</html>
